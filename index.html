@@ -3,95 +3,137 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Fantasy Surf Tour - Combined Standings</title>
+  <title>Wannabe Tennis Tour - Combined Standings</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
   <style>
     body { font-family: system-ui, -apple-system, sans-serif; }
     .highlight { background-color: #fefce8; }
+    th, td { padding: 12px 16px; }
   </style>
 </head>
-<body class="bg-gray-50 min-h-screen">
-  <div class="max-w-5xl mx-auto p-6">
-    <!-- Header -->
-    <div class="flex items-center justify-between mb-6">
-      <div class="flex items-center gap-3">
-        <i class="fa-solid fa-trophy text-3xl text-yellow-500"></i>
+<body class="bg-gray-50 min-h-screen py-8">
+  <div class="max-w-6xl mx-auto px-6">
+    <div class="flex items-center justify-between mb-8">
+      <div class="flex items-center gap-4">
+        <i class="fa-solid fa-trophy text-4xl text-yellow-500"></i>
         <div>
-          <h1 class="text-2xl font-bold">Season Standings</h1>
-          <p class="text-gray-500">1 Completed Event — Combined Men's + Women's League</p>
+          <h1 class="text-3xl font-bold">Season Standings</h1>
+          <p class="text-gray-600">Combined Men's + Women's League • Auto-updated from Google Sheet</p>
         </div>
       </div>
-      <div class="text-sm text-gray-500 flex items-center gap-2">
-        <i class="fa-solid fa-users"></i>
-        Members (14)
-      </div>
+      <div class="text-sm text-gray-500">Members (14)</div>
     </div>
 
-    <!-- Table -->
-    <div class="bg-white rounded-2xl shadow overflow-hidden">
-      <table class="w-full">
-        <thead class="bg-gray-100">
+    <div class="bg-white rounded-3xl shadow overflow-hidden">
+      <table class="w-full text-sm" id="leaderboard">
+        <thead class="bg-gray-100 sticky top-0">
           <tr>
-            <th class="px-6 py-4 text-left font-medium text-gray-700">Member</th>
-            <th class="px-6 py-4 text-right font-medium text-gray-700">Men's Total</th>
-            <th class="px-6 py-4 text-right font-medium text-gray-700">Women's Total</th>
-            <th class="px-6 py-4 text-right font-medium text-gray-700 bg-yellow-100">COMBINED</th>
+            <th class="text-left">Member</th>
+            <th class="text-right">Bells Beach</th>
+            <!-- Add more event headers here as you add columns in the sheet -->
+            <th class="text-right bg-orange-100">Men Total</th>
+            <th class="text-right bg-purple-100">Women Total</th>
+            <th class="text-right bg-yellow-100 font-bold">Combined</th>
+            <th class="text-right bg-emerald-100 font-bold">Drop Worst 2</th>
           </tr>
         </thead>
-        <tbody id="leaderboard-body" class="divide-y text-sm"></tbody>
+        <tbody id="tbody" class="divide-y"></tbody>
       </table>
     </div>
 
     <p class="text-center text-xs text-gray-400 mt-6">
-      Last updated: <span id="last-updated"></span> • Updated manually after each event
+      Last updated: <span id="last-updated"></span> • Data from Google Sheet • Share this page with your league
     </p>
   </div>
 
   <script>
-    // ==================== EDIT THIS DATA ====================
-    const members = [
-      { rank: 1, name: "@lanelotizard", avatar: "🦎", men: 434, women: 0, combined: 434 },
-      { rank: 2, name: "@newpointlocal", avatar: "🌊", men: 430, women: 0, combined: 430 },
-      { rank: 3, name: "@san_lo_slurpee (You)", avatar: "🏄‍♂️", men: 430, women: 0, combined: 430 },
-      { rank: 4, name: "@BananaPancakes", avatar: "🥞", men: 402, women: 0, combined: 402 },
-      { rank: 5, name: "@leftsonly", avatar: "⬅️", men: 390, women: 0, combined: 390 },
-      { rank: 6, name: "@arizonasurfchampion", avatar: "🏜️", men: 390, women: 0, combined: 390 },
-      { rank: 7, name: "@BethanyCurvBarrelDodger", avatar: "🕶️", men: 372, women: 0, combined: 372 },
-      { rank: 8, name: "@mrburns", avatar: "🔥", men: 362, women: 0, combined: 362 },
-      { rank: 9, name: "@foillord_831", avatar: "🏄", men: 332, women: 0, combined: 332 },
-      { rank: 10, name: "@Bi-stanceual", avatar: "⬅️", men: 390, women: 0, combined: 390 },
-      { rank: 11, name: "@surfergirl69", avatar: "🏜️", men: 390, women: 0, combined: 390 },
-      { rank: 12, name: "@cocohomygod", avatar: "🕶️", men: 372, women: 0, combined: 372 },
-      { rank: 13, name: "@wslcansuckmynuts", avatar: "🔥", men: 362, women: 0, combined: 362 },
-      { rank: 14, name: "@bonghitbogger", avatar: "🏄", men: 332, women: 0, combined: 332 },
-    ];
+    const SHEET_ID = "1m1nqwGlF7GyZ9pulJgM6vMaQYkNRzgUt9oIlHx9io4o";   // ←←← CHANGE THIS
+    const SHEET_NAME = "Sheet1";             // Change if your sheet has a different name
 
-    // Sort by combined score (highest first) and re-rank
-    members.sort((a, b) => b.combined - a.combined);
-    members.forEach((m, i) => m.rank = i + 1);
+    async function loadLeaderboard() {
+      try {
+        // Public Google Sheets JSON feed (works without API key for public sheets)
+        const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=${SHEET_NAME}`;
+        const res = await fetch(url);
+        const text = await res.text();
+        const jsonStr = text.match(/google.visualization.Query.setResponse\((.*)\);/s)[1];
+        const data = JSON.parse(jsonStr);
 
-    // Render table
-    const tbody = document.getElementById('leaderboard-body');
-    members.forEach(m => {
-      const row = document.createElement('tr');
-      row.className = m.name.includes('You') ? 'highlight' : '';
-      row.innerHTML = `
-        <td class="px-6 py-4 flex items-center gap-3">
-          <span class="text-2xl">${m.avatar}</span>
-          <div>
-            <span class="font-medium">${m.name}</span>
-          </div>
-        </td>
-        <td class="px-6 py-4 text-right font-mono text-orange-600">${m.men}</td>
-        <td class="px-6 py-4 text-right font-mono text-purple-600">${m.women}</td>
-        <td class="px-6 py-4 text-right font-bold text-2xl text-yellow-500 bg-yellow-100">${m.combined}</td>
-      `;
-      tbody.appendChild(row);
-    });
+        const rows = data.table.rows;
+        const headers = data.table.cols.map(col => col.label || '');
 
-    // Last updated (you can change this manually)
-    document.getElementById('last-updated').textContent = new Date().toLocaleDateString('en-US', {month:'short', day:'numeric', year:'numeric'});
+        const members = [];
+
+        rows.forEach(row => {
+          const cells = row.c || [];
+          const member = {
+            name: cells[0] ? cells[0].v : '',
+            avatar: cells[1] ? cells[1].v || '🏄' : '🏄',
+            eventsMen: [],
+            eventsWomen: []
+          };
+
+          // Parse event columns (every pair after avatar: Men then Women)
+          for (let i = 2; i < cells.length; i += 2) {
+            const men = cells[i] ? parseFloat(cells[i].v) || 0 : 0;
+            const women = cells[i+1] ? parseFloat(cells[i+1].v) || 0 : 0;
+            member.eventsMen.push(men);
+            member.eventsWomen.push(women);
+          }
+
+          member.menTotal = member.eventsMen.reduce((a,b)=>a+b,0);
+          member.womenTotal = member.eventsWomen.reduce((a,b)=>a+b,0);
+          member.combined = member.menTotal + member.womenTotal;
+
+          // Drop Worst 2: combine all event scores (men + women per event), drop 2 lowest
+          const eventTotals = member.eventsMen.map((m, i) => m + member.eventsWomen[i]);
+          if (eventTotals.length > 2) {
+            eventTotals.sort((a,b)=>a-b);
+            member.dropWorst2 = member.combined - eventTotals[0] - eventTotals[1];
+          } else {
+            member.dropWorst2 = member.combined;
+          }
+
+          if (member.name) members.push(member);
+        });
+
+        // Sort by Drop Worst 2 (or Combined if you prefer)
+        members.sort((a,b) => b.dropWorst2 - a.dropWorst2);
+
+        // Render table
+        const tbody = document.getElementById('tbody');
+        tbody.innerHTML = '';
+
+
+          let html = `
+            <td class="flex items-center gap-3 font-medium">
+              <span class="text-2xl">${m.avatar}</span>
+              ${m.name}
+            </td>
+            <td class="text-right font-mono">${m.eventsMen[0] + m.eventsWomen[0]}</td>
+            <!-- Add more event total cells here if needed -->
+            <td class="text-right font-mono text-orange-600">${m.menTotal}</td>
+            <td class="text-right font-mono text-purple-600">${m.womenTotal}</td>
+            <td class="text-right font-bold text-xl text-yellow-600">${m.combined}</td>
+            <td class="text-right font-bold text-xl text-emerald-600">${m.dropWorst2}</td>
+          `;
+
+          row.innerHTML = html;
+          tbody.appendChild(row);
+        });
+
+        document.getElementById('last-updated').textContent = new Date().toLocaleString();
+
+      } catch (e) {
+        console.error(e);
+        document.getElementById('tbody').innerHTML = `<tr><td colspan="6" class="p-8 text-center text-red-500">Error loading data. Make sure the Google Sheet is public and the ID is correct.</td></tr>`;
+      }
+    }
+
+    // Load immediately and refresh every 2 minutes
+    loadLeaderboard();
+    setInterval(loadLeaderboard, 120000);
   </script>
 </body>
 </html>
