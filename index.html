@@ -44,18 +44,27 @@
       margin-top: 3px;
     }
 
-    .member-col {
-      min-width: 180px;
-      position: sticky;
-      left: 0;
-      background: white;
-      z-index: 10;
+    .combined-cell {
+      min-width: 110px;
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: #ca8a04;
+      background-color: #fefce8;
+    }
+
+    tr {
+      transition: all 0.2s ease;
+    }
+
+    tr.highlighted {
+      background-color: #fefce8 !important;
+      box-shadow: 0 0 0 3px #facc15 inset;
     }
 
     @media (max-width: 640px) {
-      .member-col { min-width: 160px; }
       .event-cell { min-width: 92px; padding: 8px 6px; }
       .event-total { font-size: 1.05rem; }
+      .combined-cell { font-size: 1.15rem; min-width: 100px; }
       th, td { padding: 10px 6px; font-size: 0.9rem; }
     }
   </style>
@@ -83,11 +92,10 @@
         <table class="w-full border-collapse">
           <thead class="bg-gray-100 sticky top-0 z-20">
             <tr>
-              <th class="text-left pl-5 py-4 font-medium text-gray-700 member-col">Member</th>
+              <th class="text-left pl-5 py-4 font-medium text-gray-700">Member</th>
+              <th class="text-right pr-4 py-4 font-bold bg-yellow-100 text-yellow-600">COMBINED</th>
               <th class="text-center py-4 font-medium text-gray-700">Bells Beach</th>
               <th class="text-center py-4 font-medium text-gray-700">Margaret River</th>
-              <th class="text-right pr-6 py-4 font-bold bg-yellow-100 text-yellow-600">COMBINED</th>
-              <th class="text-right pr-6 py-4 font-bold bg-emerald-100 text-emerald-600">Drop Worst 2</th>
             </tr>
           </thead>
           <tbody id="leaderboard-body" class="divide-y text-sm"></tbody>
@@ -96,125 +104,27 @@
     </div>
 
     <p class="text-center text-xs text-gray-400 mt-6">
-      Last updated: <span id="last-updated"></span> • Update scores in the code after each event
+      Last updated: <span id="last-updated"></span> • Tap any row to highlight • Update scores after each event
     </p>
   </div>
 
   <script>
     // ==================== EDIT THIS DATA AFTER EACH EVENT ====================
     const members = [
-      {
-        name: "@lanelotizard",
-        avatar: "🦎",
-        events: [
-          { name: "Bells Beach", men: 434, women: 458 },
-          { name: "Margaret River", men: 0, women: 0 }
-        ]
-      },
-      {
-        name: "@newpointlocal",
-        avatar: "🌊",
-        events: [
-          { name: "Bells Beach", men: 430, women: 0 },
-          { name: "Margaret River", men: 0, women: 0 }
-        ]
-      },
-      {
-        name: "@san_lo_slurpee",
-        avatar: "🏄‍♂️",
-        events: [
-          { name: "Bells Beach", men: 430, women: 504 },
-          { name: "Margaret River", men: 0, women: 0 }
-        ]
-      },
-      {
-        name: "@BananaPancakes",
-        avatar: "🥞",
-        events: [
-          { name: "Bells Beach", men: 402, women: 538 },
-          { name: "Margaret River", men: 0, women: 0 }
-        ]
-      },
-      {
-        name: "@leftsonly",
-        avatar: "🌊",
-        events: [
-          { name: "Bells Beach", men: 390, women: 458 },
-          { name: "Margaret River", men: 0, women: 0 }
-        ]
-      },
-      {
-        name: "@arizonasurfchampion",
-        avatar: "🏜️",
-        events: [
-          { name: "Bells Beach", men: 390, women: 0 },
-          { name: "Margaret River", men: 0, women: 0 }
-        ]
-      },
-      {
-        name: "@BethanyCurvBarrelDodger",
-        avatar: "🕶️",
-        events: [
-          { name: "Bells Beach", men: 372, women: 498 },
-          { name: "Margaret River", men: 0, women: 0 }
-        ]
-      },
-      {
-        name: "@mrburns",
-        avatar: "🔥",
-        events: [
-          { name: "Bells Beach", men: 362, women: 538 },
-          { name: "Margaret River", men: 0, women: 0 }
-        ]
-      },
-      {
-        name: "@foillord_831",
-        avatar: "🏄",
-        events: [
-          { name: "Bells Beach", men: 332, women: 558 },
-          { name: "Margaret River", men: 0, women: 0 }
-        ]
-      },
-      {
-        name: "@Bi-stanceceual",
-        avatar: "🌊",
-        events: [
-          { name: "Bells Beach", men: 332, women: 408 },
-          { name: "Margaret River", men: 0, women: 0 }
-        ]
-      },
-      {
-        name: "@surfergirl69",
-        avatar: "🏄‍♀️",
-        events: [
-          { name: "Bells Beach", men: 309, women: 458 },
-          { name: "Margaret River", men: 0, women: 0 }
-        ]
-      },
-      {
-        name: "@cocohomygod",
-        avatar: "🌴",
-        events: [
-          { name: "Bells Beach", men: 264, women: 630 },
-          { name: "Margaret River", men: 0, women: 0 }
-        ]
-      },
-      {
-        name: "@wslcansuckmynuts",
-        avatar: "🏄",
-        events: [
-          { name: "Bells Beach", men: 241, women: 0 },
-          { name: "Margaret River", men: 0, women: 0 }
-        ]
-      },
-      {
-        name: "@bonghitbogger",
-        avatar: "🌊",
-        events: [
-          { name: "Bells Beach", men: 241, women: 502 },
-          { name: "Margaret River", men: 0, women: 0 }
-        ]
-      }
+      { name: "@lanelotizard",        avatar: "🦎", events: [{ name: "Bells Beach", men: 434, women: 458 }, { name: "Margaret River", men: 0, women: 0 }] },
+      { name: "@newpointlocal",       avatar: "🌊", events: [{ name: "Bells Beach", men: 430, women: 0 },   { name: "Margaret River", men: 0, women: 0 }] },
+      { name: "@san_lo_slurpee",      avatar: "🏄‍♂️", events: [{ name: "Bells Beach", men: 430, women: 504 }, { name: "Margaret River", men: 0, women: 0 }] },
+      { name: "@BananaPancakes",      avatar: "🥞", events: [{ name: "Bells Beach", men: 402, women: 538 }, { name: "Margaret River", men: 0, women: 0 }] },
+      { name: "@leftsonly",           avatar: "⬅️", events: [{ name: "Bells Beach", men: 390, women: 458 }, { name: "Margaret River", men: 0, women: 0 }] },
+      { name: "@arizonasurfchampion", avatar: "🏜️", events: [{ name: "Bells Beach", men: 390, women: 0 },   { name: "Margaret River", men: 0, women: 0 }] },
+      { name: "@BethanyCurvBarrelDodger", avatar: "🕶️", events: [{ name: "Bells Beach", men: 372, women: 498 }, { name: "Margaret River", men: 0, women: 0 }] },
+      { name: "@mrburns",             avatar: "🔥", events: [{ name: "Bells Beach", men: 362, women: 538 }, { name: "Margaret River", men: 0, women: 0 }] },
+      { name: "@foillord_831",        avatar: "🏄", events: [{ name: "Bells Beach", men: 332, women: 558 }, { name: "Margaret River", men: 0, women: 0 }] },
+      { name: "@Bi-stanceceual",      avatar: "⚖️", events: [{ name: "Bells Beach", men: 332, women: 408 }, { name: "Margaret River", men: 0, women: 0 }] },
+      { name: "@surfergirl69",        avatar: "🏄‍♀️", events: [{ name: "Bells Beach", men: 309, women: 458 }, { name: "Margaret River", men: 0, women: 0 }] },
+      { name: "@cocohomygod",         avatar: "🌴", events: [{ name: "Bells Beach", men: 264, women: 630 }, { name: "Margaret River", men: 0, women: 0 }] },
+      { name: "@wslcansuckmynuts",    avatar: "🍌", events: [{ name: "Bells Beach", men: 241, women: 0 },   { name: "Margaret River", men: 0, women: 0 }] },
+      { name: "@bonghitbogger",       avatar: "🌿", events: [{ name: "Bells Beach", men: 241, women: 502 }, { name: "Margaret River", men: 0, women: 0 }] }
     ];
 
     // Calculations
@@ -222,18 +132,10 @@
       member.menTotal = member.events.reduce((sum, ev) => sum + ev.men, 0);
       member.womenTotal = member.events.reduce((sum, ev) => sum + ev.women, 0);
       member.combined = member.menTotal + member.womenTotal;
-
-      const eventTotals = member.events.map(ev => ev.men + ev.women);
-      if (eventTotals.length > 2) {
-        const sorted = [...eventTotals].sort((a, b) => a - b);
-        member.dropWorst2 = member.combined - sorted[0] - sorted[1];
-      } else {
-        member.dropWorst2 = member.combined;
-      }
     });
 
-    // Sort by Drop Worst 2
-    members.sort((a, b) => b.dropWorst2 - a.dropWorst2);
+    // Sort by Combined (highest first)
+    members.sort((a, b) => b.combined - a.combined);
 
     // Render table
     const tbody = document.getElementById('leaderboard-body');
@@ -255,15 +157,26 @@
       });
 
       const row = document.createElement('tr');
+      row.className = "cursor-pointer hover:bg-yellow-50";
       row.innerHTML = `
-        <td class="pl-5 py-4 font-medium flex items-center gap-3 member-col">
+        <td class="pl-5 py-4 font-medium flex items-center gap-3 whitespace-nowrap">
           <span class="text-2xl flex-shrink-0">${member.avatar}</span>
-          <span class="truncate">${member.name}</span>
+          <span>${member.name}</span>
+        </td>
+        <td class="combined-cell text-right pr-6 py-4">
+          ${member.combined}
         </td>
         ${eventCells}
-        <td class="text-right pr-6 py-4 font-bold text-2xl text-yellow-600 bg-yellow-50">${member.combined}</td>
-        <td class="text-right pr-6 py-4 font-bold text-2xl text-emerald-600 bg-emerald-50">${member.dropWorst2}</td>
       `;
+
+      // Click to highlight row
+      row.addEventListener('click', () => {
+        // Remove highlight from all rows
+        document.querySelectorAll('tr').forEach(r => r.classList.remove('highlighted'));
+        // Add highlight to this row
+        row.classList.add('highlighted');
+      });
+
       tbody.appendChild(row);
     });
 
