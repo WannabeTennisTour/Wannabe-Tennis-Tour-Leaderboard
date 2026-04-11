@@ -8,61 +8,77 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
   <style>
     body { font-family: system-ui, -apple-system, sans-serif; }
-    .highlight { background-color: #fefce8; }
-    th, td { padding: 14px 16px; }
-    .event-col { background-color: #f8fafc; }
+    .event-cell {
+      padding: 12px 8px;
+      text-align: center;
+      min-width: 110px;
+    }
+    .event-total {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: #1f2937;
+    }
+    .event-detail {
+      font-size: 0.75rem;
+      line-height: 1.1;
+      color: #6b7280;
+      margin-top: 2px;
+    }
+    @media (max-width: 640px) {
+      .event-cell { min-width: 90px; padding: 10px 6px; }
+      .event-total { font-size: 1.1rem; }
+      th, td { padding: 10px 6px; }
+      .member-name { font-size: 0.95rem; }
+    }
   </style>
 </head>
-<body class="bg-gray-50 min-h-screen py-8">
-  <div class="max-w-6xl mx-auto px-6">
+<body class="bg-gray-50 min-h-screen py-6">
+  <div class="max-w-5xl mx-auto px-4 sm:px-6">
     <!-- Header -->
     <div class="flex items-center justify-between mb-8">
-      <div class="flex items-center gap-4">
+      <div class="flex items-center gap-3">
         <i class="fa-solid fa-trophy text-4xl text-yellow-500"></i>
         <div>
-          <h1 class="text-3xl font-bold">Season Standings</h1>
-          <p class="text-gray-600">Combined Men's + Women's League • 2 Events Completed</p>
+          <h1 class="text-2xl sm:text-3xl font-bold">Season Standings</h1>
+          <p class="text-gray-600 text-sm sm:text-base">Combined Men's + Women's League</p>
         </div>
       </div>
       <div class="text-sm text-gray-500 flex items-center gap-2">
         <i class="fa-solid fa-users"></i>
-        Members (14)
+        <span>14 Members</span>
       </div>
     </div>
 
     <!-- Table -->
     <div class="bg-white rounded-3xl shadow overflow-hidden">
-      <table class="w-full text-sm">
+      <table class="w-full">
         <thead class="bg-gray-100">
           <tr>
-            <th class="text-left font-medium text-gray-700">Member</th>
-            <th class="text-right font-medium text-gray-700 event-col">Bells Beach</th>
-            <th class="text-right font-medium text-gray-700 event-col">Margaret River</th>
-            <th class="text-right font-medium text-orange-600">Men Total</th>
-            <th class="text-right font-medium text-purple-600">Women Total</th>
-            <th class="text-right bg-yellow-100 font-bold text-yellow-600">COMBINED</th>
-            <th class="text-right bg-emerald-100 font-bold text-emerald-600">Drop Worst 2</th>
+            <th class="text-left pl-6 py-4 font-medium text-gray-700 sticky left-0 bg-gray-100 z-10">Member</th>
+            <th class="text-center py-4 font-medium text-gray-700">Bells Beach</th>
+            <th class="text-center py-4 font-medium text-gray-700">Margaret River</th>
+            <th class="text-right pr-6 py-4 font-bold bg-yellow-100 text-yellow-600">COMBINED</th>
+            <th class="text-right pr-6 py-4 font-bold bg-emerald-100 text-emerald-600">Drop Worst 2</th>
           </tr>
         </thead>
-        <tbody id="leaderboard-body" class="divide-y"></tbody>
+        <tbody id="leaderboard-body" class="divide-y text-sm"></tbody>
       </table>
     </div>
 
     <p class="text-center text-xs text-gray-400 mt-6">
-      Last updated: <span id="last-updated"></span> • Edit the scores in the code after each new event
+      Last updated: <span id="last-updated"></span> • Update scores in the code after each event
     </p>
   </div>
 
   <script>
-    // ==================== EASY TO EDIT DATA SECTION ====================
-    // Add new events here as the season progresses (format: { name: "Event Name", men: number, women: number })
+    // ==================== EDIT THIS DATA AFTER EACH EVENT ====================
     const members = [
       {
         name: "@lanelotizard",
         avatar: "🦎",
         events: [
           { name: "Bells Beach", men: 434, women: 458 },
-          { name: "Margaret River", men: 0, women: 0 }   // Update these when results come in
+          { name: "Margaret River", men: 0, women: 0 }
         ]
       },
       {
@@ -74,7 +90,7 @@
         ]
       },
       {
-        name: "@san_lo_slurpee (You)",
+        name: "@san_lo_slurpee",
         avatar: "🏄‍♂️",
         events: [
           { name: "Bells Beach", men: 430, women: 504 },
@@ -171,13 +187,12 @@
       }
     ];
 
-    // ==================== CALCULATIONS (no need to edit) ====================
+    // Calculations
     members.forEach(member => {
       member.menTotal = member.events.reduce((sum, ev) => sum + ev.men, 0);
       member.womenTotal = member.events.reduce((sum, ev) => sum + ev.women, 0);
       member.combined = member.menTotal + member.womenTotal;
 
-      // Drop Worst 2: calculate per-event total (men + women), drop the two lowest
       const eventTotals = member.events.map(ev => ev.men + ev.women);
       if (eventTotals.length > 2) {
         const sorted = [...eventTotals].sort((a, b) => a - b);
@@ -187,40 +202,49 @@
       }
     });
 
-    // Sort by Drop Worst 2 (highest first)
+    // Sort by Drop Worst 2
     members.sort((a, b) => b.dropWorst2 - a.dropWorst2);
 
-    // Render the table
+    // Render table
     const tbody = document.getElementById('leaderboard-body');
     tbody.innerHTML = '';
 
-    members.forEach((m, index) => {
-      const isYou = m.name.toLowerCase().includes('slurpee');
-      const row = document.createElement('tr');
-      if (isYou) row.className = 'highlight';
-
+    members.forEach(member => {
       let eventCells = '';
-      m.events.forEach(ev => {
-        eventCells += `<td class="text-right font-mono event-col">${ev.men + ev.women}</td>`;
+      
+      member.events.forEach(ev => {
+        const eventTotal = ev.men + ev.women;
+        eventCells += `
+          <td class="event-cell border-r border-gray-100 last:border-r-0">
+            <div class="event-total">${eventTotal}</div>
+            <div class="event-detail">
+              M:${ev.men}<br>
+              W:${ev.women}
+            </div>
+          </td>
+        `;
       });
 
+      const row = document.createElement('tr');
       row.innerHTML = `
-        <td class="flex items-center gap-3 font-medium">
-          <span class="text-2xl">${m.avatar}</span>
-          ${m.name}
+        <td class="pl-6 py-4 font-medium flex items-center gap-3 member-name">
+          <span class="text-2xl flex-shrink-0">${member.avatar}</span>
+          <span>${member.name}</span>
         </td>
         ${eventCells}
-        <td class="text-right font-mono text-orange-600">${m.menTotal}</td>
-        <td class="text-right font-mono text-purple-600">${m.womenTotal}</td>
-        <td class="text-right font-bold text-2xl text-yellow-600 bg-yellow-100">${m.combined}</td>
-        <td class="text-right font-bold text-2xl text-emerald-600 bg-emerald-100">${m.dropWorst2}</td>
+        <td class="text-right pr-6 py-4 font-bold text-2xl text-yellow-600 bg-yellow-50">${member.combined}</td>
+        <td class="text-right pr-6 py-4 font-bold text-2xl text-emerald-600 bg-emerald-50">${member.dropWorst2}</td>
       `;
       tbody.appendChild(row);
     });
 
     // Last updated
     document.getElementById('last-updated').textContent = new Date().toLocaleDateString('en-US', {
-      month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit'
+      month: 'short', 
+      day: 'numeric', 
+      year: 'numeric',
+      hour: 'numeric',
+      minute: '2-digit'
     });
   </script>
 </body>
