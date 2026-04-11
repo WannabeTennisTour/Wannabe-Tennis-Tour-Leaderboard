@@ -25,7 +25,7 @@
     }
 
     .event-cell {
-      min-width: 100px;
+      min-width: 110px;
       padding: 10px 8px;
       text-align: center;
       white-space: nowrap;
@@ -61,8 +61,12 @@
       box-shadow: 0 0 0 3px #facc15 inset;
     }
 
+    tr.highlighted .combined-cell {
+      background-color: #fef08c !important;
+    }
+
     @media (max-width: 640px) {
-      .event-cell { min-width: 92px; padding: 8px 6px; }
+      .event-cell { min-width: 96px; padding: 8px 6px; }
       .event-total { font-size: 1.05rem; }
       .combined-cell { font-size: 1.15rem; min-width: 100px; }
       th, td { padding: 10px 6px; font-size: 0.9rem; }
@@ -95,7 +99,8 @@
               <th class="text-left pl-5 py-4 font-medium text-gray-700">Member</th>
               <th class="text-right pr-4 py-4 font-bold bg-yellow-100 text-yellow-600">COMBINED</th>
               <th class="text-center py-4 font-medium text-gray-700">Bells Beach</th>
-              <th class="text-center py-4 font-medium text-gray-700">Margaret River</th>
+              <!-- Margaret River column commented out for now -->
+              <!-- <th class="text-center py-4 font-medium text-gray-700">Margaret River</th> -->
             </tr>
           </thead>
           <tbody id="leaderboard-body" class="divide-y text-sm"></tbody>
@@ -104,27 +109,27 @@
     </div>
 
     <p class="text-center text-xs text-gray-400 mt-6">
-      Last updated: <span id="last-updated"></span> • Tap any row to highlight • Update scores after each event
+      Last updated: <span id="last-updated"></span> • Tap any row to highlight
     </p>
   </div>
 
   <script>
     // ==================== EDIT THIS DATA AFTER EACH EVENT ====================
     const members = [
-      { name: "@lanelotizard",        avatar: "🦎", events: [{ name: "Bells Beach", men: 434, women: 458 }, { name: "Margaret River", men: 0, women: 0 }] },
-      { name: "@newpointlocal",       avatar: "🌊", events: [{ name: "Bells Beach", men: 430, women: 0 },   { name: "Margaret River", men: 0, women: 0 }] },
-      { name: "@san_lo_slurpee",      avatar: "🏄‍♂️", events: [{ name: "Bells Beach", men: 430, women: 504 }, { name: "Margaret River", men: 0, women: 0 }] },
-      { name: "@BananaPancakes",      avatar: "🥞", events: [{ name: "Bells Beach", men: 402, women: 538 }, { name: "Margaret River", men: 0, women: 0 }] },
-      { name: "@leftsonly",           avatar: "⬅️", events: [{ name: "Bells Beach", men: 390, women: 458 }, { name: "Margaret River", men: 0, women: 0 }] },
-      { name: "@arizonasurfchampion", avatar: "🏜️", events: [{ name: "Bells Beach", men: 390, women: 0 },   { name: "Margaret River", men: 0, women: 0 }] },
-      { name: "@BethanyCurvBarrelDodger", avatar: "🕶️", events: [{ name: "Bells Beach", men: 372, women: 498 }, { name: "Margaret River", men: 0, women: 0 }] },
-      { name: "@mrburns",             avatar: "🔥", events: [{ name: "Bells Beach", men: 362, women: 538 }, { name: "Margaret River", men: 0, women: 0 }] },
-      { name: "@foillord_831",        avatar: "🏄", events: [{ name: "Bells Beach", men: 332, women: 558 }, { name: "Margaret River", men: 0, women: 0 }] },
-      { name: "@Bi-stanceceual",      avatar: "⚖️", events: [{ name: "Bells Beach", men: 332, women: 408 }, { name: "Margaret River", men: 0, women: 0 }] },
-      { name: "@surfergirl69",        avatar: "🏄‍♀️", events: [{ name: "Bells Beach", men: 309, women: 458 }, { name: "Margaret River", men: 0, women: 0 }] },
-      { name: "@cocohomygod",         avatar: "🌴", events: [{ name: "Bells Beach", men: 264, women: 630 }, { name: "Margaret River", men: 0, women: 0 }] },
-      { name: "@wslcansuckmynuts",    avatar: "🍌", events: [{ name: "Bells Beach", men: 241, women: 0 },   { name: "Margaret River", men: 0, women: 0 }] },
-      { name: "@bonghitbogger",       avatar: "🌿", events: [{ name: "Bells Beach", men: 241, women: 502 }, { name: "Margaret River", men: 0, women: 0 }] }
+      { name: "@lanelotizard",        avatar: "🦎", events: [{ name: "Bells Beach", men: 434, women: 458 }] },
+      { name: "@newpointlocal",       avatar: "🌊", events: [{ name: "Bells Beach", men: 430, women: 0 }] },
+      { name: "@san_lo_slurpee",      avatar: "🏄‍♂️", events: [{ name: "Bells Beach", men: 430, women: 504 }] },
+      { name: "@BananaPancakes",      avatar: "🥞", events: [{ name: "Bells Beach", men: 402, women: 538 }] },
+      { name: "@leftsonly",           avatar: "⬅️", events: [{ name: "Bells Beach", men: 390, women: 458 }] },
+      { name: "@arizonasurfchampion", avatar: "🏜️", events: [{ name: "Bells Beach", men: 390, women: 0 }] },
+      { name: "@BethanyCurvBarrelDodger", avatar: "🕶️", events: [{ name: "Bells Beach", men: 372, women: 498 }] },
+      { name: "@mrburns",             avatar: "🔥", events: [{ name: "Bells Beach", men: 362, women: 538 }] },
+      { name: "@foillord_831",        avatar: "🏄", events: [{ name: "Bells Beach", men: 332, women: 558 }] },
+      { name: "@Bi-stanceceual",      avatar: "⚖️", events: [{ name: "Bells Beach", men: 332, women: 408 }] },
+      { name: "@surfergirl69",        avatar: "🏄‍♀️", events: [{ name: "Bells Beach", men: 309, women: 458 }] },
+      { name: "@cocohomygod",         avatar: "🌴", events: [{ name: "Bells Beach", men: 264, women: 630 }] },
+      { name: "@wslcansuckmynuts",    avatar: "🍌", events: [{ name: "Bells Beach", men: 241, women: 0 }] },
+      { name: "@bonghitbogger",       avatar: "🌿", events: [{ name: "Bells Beach", men: 241, women: 502 }] }
     ];
 
     // Calculations
@@ -169,11 +174,9 @@
         ${eventCells}
       `;
 
-      // Click to highlight row
+      // Click to highlight entire row (including Combined cell)
       row.addEventListener('click', () => {
-        // Remove highlight from all rows
         document.querySelectorAll('tr').forEach(r => r.classList.remove('highlighted'));
-        // Add highlight to this row
         row.classList.add('highlighted');
       });
 
