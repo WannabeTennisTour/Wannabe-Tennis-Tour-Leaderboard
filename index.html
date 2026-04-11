@@ -8,39 +8,67 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
   <style>
     body { font-family: system-ui, -apple-system, sans-serif; }
-    .event-cell {
-      padding: 12px 8px;
-      text-align: center;
-      min-width: 110px;
+
+    .table-container {
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: thin;
     }
+
+    .table-container::-webkit-scrollbar {
+      height: 6px;
+    }
+
+    .table-container::-webkit-scrollbar-thumb {
+      background-color: #d1d5db;
+      border-radius: 20px;
+    }
+
+    .event-cell {
+      min-width: 100px;
+      padding: 10px 8px;
+      text-align: center;
+      white-space: nowrap;
+    }
+
     .event-total {
-      font-size: 1.25rem;
+      font-size: 1.15rem;
       font-weight: 700;
       color: #1f2937;
     }
+
     .event-detail {
-      font-size: 0.75rem;
+      font-size: 0.72rem;
       line-height: 1.1;
       color: #6b7280;
-      margin-top: 2px;
+      margin-top: 3px;
     }
+
+    .member-col {
+      min-width: 180px;
+      position: sticky;
+      left: 0;
+      background: white;
+      z-index: 10;
+    }
+
     @media (max-width: 640px) {
-      .event-cell { min-width: 90px; padding: 10px 6px; }
-      .event-total { font-size: 1.1rem; }
-      th, td { padding: 10px 6px; }
-      .member-name { font-size: 0.95rem; }
+      .member-col { min-width: 160px; }
+      .event-cell { min-width: 92px; padding: 8px 6px; }
+      .event-total { font-size: 1.05rem; }
+      th, td { padding: 10px 6px; font-size: 0.9rem; }
     }
   </style>
 </head>
 <body class="bg-gray-50 min-h-screen py-6">
   <div class="max-w-5xl mx-auto px-4 sm:px-6">
     <!-- Header -->
-    <div class="flex items-center justify-between mb-8">
+    <div class="flex items-center justify-between mb-6">
       <div class="flex items-center gap-3">
-        <i class="fa-solid fa-trophy text-4xl text-yellow-500"></i>
+        <i class="fa-solid fa-trophy text-3xl text-yellow-500"></i>
         <div>
-          <h1 class="text-2xl sm:text-3xl font-bold">Season Standings</h1>
-          <p class="text-gray-600 text-sm sm:text-base">Combined Men's + Women's League</p>
+          <h1 class="text-2xl font-bold">Season Standings</h1>
+          <p class="text-gray-600 text-sm">Combined Men's + Women's League</p>
         </div>
       </div>
       <div class="text-sm text-gray-500 flex items-center gap-2">
@@ -49,20 +77,22 @@
       </div>
     </div>
 
-    <!-- Table -->
+    <!-- Scrollable Table -->
     <div class="bg-white rounded-3xl shadow overflow-hidden">
-      <table class="w-full">
-        <thead class="bg-gray-100">
-          <tr>
-            <th class="text-left pl-6 py-4 font-medium text-gray-700 sticky left-0 bg-gray-100 z-10">Member</th>
-            <th class="text-center py-4 font-medium text-gray-700">Bells Beach</th>
-            <th class="text-center py-4 font-medium text-gray-700">Margaret River</th>
-            <th class="text-right pr-6 py-4 font-bold bg-yellow-100 text-yellow-600">COMBINED</th>
-            <th class="text-right pr-6 py-4 font-bold bg-emerald-100 text-emerald-600">Drop Worst 2</th>
-          </tr>
-        </thead>
-        <tbody id="leaderboard-body" class="divide-y text-sm"></tbody>
-      </table>
+      <div class="table-container">
+        <table class="w-full border-collapse">
+          <thead class="bg-gray-100 sticky top-0 z-20">
+            <tr>
+              <th class="text-left pl-5 py-4 font-medium text-gray-700 member-col">Member</th>
+              <th class="text-center py-4 font-medium text-gray-700">Bells Beach</th>
+              <th class="text-center py-4 font-medium text-gray-700">Margaret River</th>
+              <th class="text-right pr-6 py-4 font-bold bg-yellow-100 text-yellow-600">COMBINED</th>
+              <th class="text-right pr-6 py-4 font-bold bg-emerald-100 text-emerald-600">Drop Worst 2</th>
+            </tr>
+          </thead>
+          <tbody id="leaderboard-body" class="divide-y text-sm"></tbody>
+        </table>
+      </div>
     </div>
 
     <p class="text-center text-xs text-gray-400 mt-6">
@@ -218,8 +248,7 @@
           <td class="event-cell border-r border-gray-100 last:border-r-0">
             <div class="event-total">${eventTotal}</div>
             <div class="event-detail">
-              M:${ev.men}<br>
-              W:${ev.women}
+              M:${ev.men}<br>W:${ev.women}
             </div>
           </td>
         `;
@@ -227,9 +256,9 @@
 
       const row = document.createElement('tr');
       row.innerHTML = `
-        <td class="pl-6 py-4 font-medium flex items-center gap-3 member-name">
+        <td class="pl-5 py-4 font-medium flex items-center gap-3 member-col">
           <span class="text-2xl flex-shrink-0">${member.avatar}</span>
-          <span>${member.name}</span>
+          <span class="truncate">${member.name}</span>
         </td>
         ${eventCells}
         <td class="text-right pr-6 py-4 font-bold text-2xl text-yellow-600 bg-yellow-50">${member.combined}</td>
