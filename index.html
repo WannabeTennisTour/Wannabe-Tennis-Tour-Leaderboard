@@ -66,7 +66,7 @@
     }
     .star {
       color: #eab308;
-      font-size: 1.1rem;
+      font-size: 1.2rem;
       font-weight: bold;
     }
     tr {
@@ -122,9 +122,10 @@
       </div>
     </div>
 
-    <div class="mt-6 text-center">
-      <p class="text-xs text-black-500">
-        * = Highest single event score
+    <div class="mt-6 text-center text-sm">
+      <p class="inline-flex items-center gap-1.5 bg-white px-4 py-2 rounded-2xl shadow-sm border">
+        <span class="star text-lg">*</span> 
+        <span class="text-gray-600">= Highest single event score overall</span>
       </p>
     </div>
 
@@ -234,11 +235,9 @@
       ]}
     ];
 
-    // Process each member
+    // Process each member: drop lowest event + calculate combined
     members.forEach(member => {
-      member.events.forEach(ev => {
-        ev.total = ev.men + ev.women;
-      });
+      member.events.forEach(ev => ev.total = ev.men + ev.women);
 
       // Find lowest event to drop
       let lowestIndex = 0;
@@ -256,44 +255,43 @@
       member.combined = member.menTotal + member.womenTotal - lowestScore;
     });
 
-    // Find the absolute highest single event score across everyone
-    let globalMaxScore = -1;
-    let maxPlayerIndex = -1;
-    let maxEventIndex = -1;
+    // === Find the absolute highest single event across ALL players ===
+    let highestEventScore = -1;
+    let highestPlayerName = "";
+    let highestEventIndex = -1;
 
-    members.forEach((member, pIndex) => {
-      member.events.forEach((ev, eIndex) => {
-        if (ev.total > globalMaxScore) {
-          globalMaxScore = ev.total;
-          maxPlayerIndex = pIndex;
-          maxEventIndex = eIndex;
+    members.forEach(member => {
+      member.events.forEach((ev, idx) => {
+        if (ev.total > highestEventScore) {
+          highestEventScore = ev.total;
+          highestPlayerName = member.name;
+          highestEventIndex = idx;
         }
       });
     });
 
-    // Sort by adjusted Combined score
+    // Sort by combined score
     members.sort((a, b) => b.combined - a.combined);
 
-    // Render table
+    // Render
     const tbody = document.getElementById('leaderboard-body');
     tbody.innerHTML = '';
 
     members.forEach((member, index) => {
       const rank = index + 1;
-      let rankHTML = rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : rank;
-
-      // Check if this player has the highest single event
-      const hasStar = members.indexOf(member) === maxPlayerIndex; // Use original index after sort? Wait, better to use name or flag
+      const rankHTML = rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : rank;
 
       let eventCells = '';
       member.events.forEach((ev, i) => {
         const isDropped = i === member.droppedIndex;
-        const isMaxEvent = (member.name === members[maxPlayerIndex].name && i === maxEventIndex);
+        const isHighestEvent = (member.name === highestPlayerName && i === highestEventIndex);
+
+        const starHTML = isHighestEvent ? '<span class="star">*</span>' : '';
 
         eventCells += `
           <td class="event-cell ${isDropped ? 'dropped' : ''}">
             <div class="event-total ${isDropped ? 'dropped' : ''}">
-              ${ev.total}${isMaxEvent ? '<span class="star">*</span>' : ''}
+              ${starHTML}${ev.total}${starHTML}
             </div>
             <div class="event-detail">
               M:${ev.men}<br>W:${ev.women}
@@ -301,6 +299,8 @@
           </td>
         `;
       });
+
+      const hasStar = member.name === highestPlayerName;
 
       const row = document.createElement('tr');
       row.className = "cursor-pointer hover:bg-yellow-50";
@@ -326,11 +326,7 @@
 
     // Last updated
     document.getElementById('last-updated').textContent = new Date().toLocaleDateString('en-US', {
-      month: 'short',
-      day: 'numeric',
-      year: 'numeric',
-      hour: 'numeric',
-      minute: '2-digit'
+      month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit'
     });
   </script>
 </body>
