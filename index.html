@@ -8,82 +8,69 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
   <style>
     body { font-family: system-ui, -apple-system, sans-serif; }
-
     .table-container {
       overflow-x: auto;
       -webkit-overflow-scrolling: touch;
       scrollbar-width: thin;
     }
-
     .table-container::-webkit-scrollbar {
       height: 6px;
     }
-
     .table-container::-webkit-scrollbar-thumb {
       background-color: #d1d5db;
       border-radius: 20px;
     }
-
-    table {
-      border-collapse: collapse;
-    }
-
+    table { border-collapse: collapse; }
     th, td {
       border-right: 1px solid #e5e7eb;
     }
-
     th:last-child, td:last-child {
       border-right: none;
     }
-
     thead th {
       border-bottom: 2px solid #d1d5db;
     }
-
     .rank-cell {
       min-width: 60px;
       text-align: center;
       font-weight: 700;
       font-size: 1.1rem;
     }
-
     .event-cell {
       min-width: 110px;
       padding: 10px 8px;
       text-align: center;
       white-space: nowrap;
     }
-
     .event-total {
       font-size: 1.15rem;
       font-weight: 700;
       color: #1f2937;
     }
-
     .event-detail {
       font-size: 0.72rem;
       line-height: 1.1;
       color: #6b7280;
       margin-top: 3px;
     }
-
     .combined-cell {
       min-width: 110px;
       font-size: 1.25rem;
       font-weight: 700;
       color: #ca8a04;
     }
-
+    .dropped {
+      text-decoration: line-through;
+      color: #9ca3af !important;
+      opacity: 0.75;
+    }
     tr {
       transition: all 0.2s ease;
     }
-
     tr.highlighted {
       background-color: #fefce8 !important;
       box-shadow: 0 0 0 3px #eab308 inset;
-      position: relative;
     }
-
     @media (max-width: 640px) {
       .rank-cell { min-width: 50px; font-size: 1rem; }
       .event-cell { min-width: 96px; padding: 8px 6px; }
@@ -101,7 +88,7 @@
         <i class="fa-solid fa-trophy text-3xl text-yellow-500"></i>
         <div>
           <h1 class="text-2xl font-bold">Wannabe Tennis Tour Leaderboard</h1>
-          <p class="text-gray-600 text-sm">Combined Men's + Women's</p>
+          <p class="text-gray-600 text-sm">Combined Men's + Women's • Drop Worst Event</p>
         </div>
       </div>
       <div class="text-sm text-gray-500 flex items-center gap-2">
@@ -120,11 +107,9 @@
               <th class="text-left pl-5 py-4 font-medium text-gray-700">Member</th>
               <th class="text-right pr-4 py-4 font-bold bg-yellow-100 text-yellow-600">COMBINED</th>
               <th class="text-center py-4 font-medium text-gray-700">Bells Beach</th>
-              <!-- Margaret River column (commented out for now) -->
               <th class="text-center py-4 font-medium text-gray-700">Margaret River</th>
               <th class="text-center py-4 font-medium text-gray-700">Gold Coast</th>
               <th class="text-center py-4 font-medium text-gray-700">New Zealand</th>
-
             </tr>
           </thead>
           <tbody id="leaderboard-body" class="divide-y text-sm"></tbody>
@@ -133,39 +118,136 @@
     </div>
 
     <p class="text-center text-xs text-gray-400 mt-6">
-      Last updated: <span id="last-updated"></span> • Tap any row to highlight
+      Last updated: <span id="last-updated"></span> • Lowest event dropped per player • Tap row to highlight
     </p>
   </div>
 
   <script>
     // ==================== EDIT THIS DATA AFTER EACH EVENT ====================
     const members = [
-      { name: "@lanelotizard",            avatar: "🦎", events: [{ name: "Bells Beach", men: 434, women: 458 }, { name: "Margaret River", men: 0, women: 0 }, { name: "Gold Coast", men: 540, women: 0 }, { name: "New Zealand", men: 0, women: 0 }] },
-      { name: "@newpointlocal",           avatar: "🏋️‍♀️", events: [{ name: "Bells Beach", men: 430, women: 0 }, { name: "Margaret River", men: 492, women: 370 }, { name: "Gold Coast", men: 0, women: 0 }, { name: "New Zealand", men: 0, women: 0 }] },
-      { name: "@san_lo_slurpee",          avatar: "🥤", events: [{ name: "Bells Beach", men: 430, women: 504 }, { name: "Margaret River", men: 670, women: 640 }, { name: "Gold Coast", men: 606, women: 834 }, { name: "New Zealand", men: 0, women: 0 }] },
-      { name: "@BananaPancakes",          avatar: "🥞", events: [{ name: "Bells Beach", men: 402, women: 538 }, { name: "Margaret River", men: 510, women: 464 }, { name: "Gold Coast", men: 0, women: 0 }, { name: "New Zealand", men: 0, women: 0 }] },
-      { name: "@leftsonly",               avatar: "⬅️", events: [{ name: "Bells Beach", men: 390, women: 458 }, { name: "Margaret River", men: 674, women: 492 }, { name: "Gold Coast", men: 578, women: 686 }, { name: "New Zealand", men: 0, women: 0 }] },
-      { name: "@arizonasurfchampion",     avatar: "🏜️", events: [{ name: "Bells Beach", men: 390, women: 0 }, { name: "Margaret River", men: 492, women: 552 }, { name: "Gold Coast", men: 520, women: 780 }, { name: "New Zealand", men: 0, women: 0 }] },
-      { name: "@BethanyCurvBarrelDodger", avatar: "🕶️", events: [{ name: "Bells Beach", men: 372, women: 498 }, { name: "Margaret River", men: 610, women: 606 }, { name: "Gold Coast", men: 848, women: 692 }, { name: "New Zealand", men: 0, women: 0 }] },
-      { name: "@mrburns",                 avatar: "💰", events: [{ name: "Bells Beach", men: 362, women: 538 }, { name: "Margaret River", men: 628, women: 646 }, { name: "Gold Coast", men: 620, women: 692 }, { name: "New Zealand", men: 0, women: 0 }] },
-      { name: "@foillord_831",            avatar: "⛵", events: [{ name: "Bells Beach", men: 332, women: 558 }, { name: "Margaret River", men: 658, women: 478 }, { name: "Gold Coast", men: 716, women: 612 }, { name: "New Zealand", men: 0, women: 0 }] },
-      { name: "@Bi-stanceceual",          avatar: "🏳️‍🌈", events: [{ name: "Bells Beach", men: 332, women: 408 }, { name: "Margaret River", men: 510, women: 834 }, { name: "Gold Coast", men: 540, women: 592 }, { name: "New Zealand", men: 0, women: 0 }] },
-      { name: "@surfergirl69",            avatar: "♋", events: [{ name: "Bells Beach", men: 309, women: 458 }, { name: "Margaret River", men: 0, women: 0 }, { name: "Gold Coast", men: 0, women: 0 }, { name: "New Zealand", men: 0, women: 0 }] },
-      { name: "@cocohomygod",             avatar: "👙", events: [{ name: "Bells Beach", men: 264, women: 630 }, { name: "Margaret River", men: 530, women: 552 }, { name: "Gold Coast", men: 648, women: 652 }, { name: "New Zealand", men: 0, women: 0 }] },
-      { name: "@wslcansuckmynuts",        avatar: "🥜", events: [{ name: "Bells Beach", men: 241, women: 0 }, { name: "Margaret River", men: 440, women: 646 }, { name: "Gold Coast", men: 597, women: 746 }, { name: "New Zealand", men: 0, women: 0 }] },
-      { name: "@bonghitbogger",           avatar: "🌿", events: [{ name: "Bells Beach", men: 241, women: 502 }, { name: "Margaret River", men: 0, women: 0 }, { name: "Gold Coast", men: 0, women: 0 }, { name: "New Zealand", men: 0, women: 0 }] },
-      { name: "@ridingprivates",          avatar: "🍆", events: [{ name: "Bells Beach", men: 0, women: 0 }, { name: "Margaret River", men: 538, women: 606 }, { name: "Gold Coast", men: 580, women: 692 }, { name: "New Zealand", men: 0, women: 0 }] },
-      { name: "@mrk",                     avatar: "👴", events: [{ name: "Bells Beach", men: 0, women: 0 }, { name: "Margaret River", men: 498, women: 690 }, { name: "Gold Coast", men: 510, women: 370 }, { name: "New Zealand", men: 0, women: 0 }] }
+      { name: "@lanelotizard", avatar: "🦎", events: [
+        { name: "Bells Beach", men: 434, women: 458 },
+        { name: "Margaret River", men: 0, women: 0 },
+        { name: "Gold Coast", men: 540, women: 0 },
+        { name: "New Zealand", men: 0, women: 0 }
+      ]},
+      { name: "@newpointlocal", avatar: "🏋️‍♀️", events: [
+        { name: "Bells Beach", men: 430, women: 0 },
+        { name: "Margaret River", men: 492, women: 370 },
+        { name: "Gold Coast", men: 0, women: 0 },
+        { name: "New Zealand", men: 0, women: 0 }
+      ]},
+      // ... (all other members remain the same - I'm keeping them all)
+      { name: "@san_lo_slurpee", avatar: "🥤", events: [
+        { name: "Bells Beach", men: 430, women: 504 },
+        { name: "Margaret River", men: 670, women: 640 },
+        { name: "Gold Coast", men: 606, women: 834 },
+        { name: "New Zealand", men: 0, women: 0 }
+      ]},
+      { name: "@BananaPancakes", avatar: "🥞", events: [
+        { name: "Bells Beach", men: 402, women: 538 },
+        { name: "Margaret River", men: 510, women: 464 },
+        { name: "Gold Coast", men: 0, women: 0 },
+        { name: "New Zealand", men: 0, women: 0 }
+      ]},
+      { name: "@leftsonly", avatar: "⬅️", events: [
+        { name: "Bells Beach", men: 390, women: 458 },
+        { name: "Margaret River", men: 674, women: 492 },
+        { name: "Gold Coast", men: 578, women: 686 },
+        { name: "New Zealand", men: 0, women: 0 }
+      ]},
+      { name: "@arizonasurfchampion", avatar: "🏜️", events: [
+        { name: "Bells Beach", men: 390, women: 0 },
+        { name: "Margaret River", men: 492, women: 552 },
+        { name: "Gold Coast", men: 520, women: 780 },
+        { name: "New Zealand", men: 0, women: 0 }
+      ]},
+      { name: "@BethanyCurvBarrelDodger", avatar: "🕶️", events: [
+        { name: "Bells Beach", men: 372, women: 498 },
+        { name: "Margaret River", men: 610, women: 606 },
+        { name: "Gold Coast", men: 848, women: 692 },
+        { name: "New Zealand", men: 0, women: 0 }
+      ]},
+      { name: "@mrburns", avatar: "💰", events: [
+        { name: "Bells Beach", men: 362, women: 538 },
+        { name: "Margaret River", men: 628, women: 646 },
+        { name: "Gold Coast", men: 620, women: 692 },
+        { name: "New Zealand", men: 0, women: 0 }
+      ]},
+      { name: "@foillord_831", avatar: "⛵", events: [
+        { name: "Bells Beach", men: 332, women: 558 },
+        { name: "Margaret River", men: 658, women: 478 },
+        { name: "Gold Coast", men: 716, women: 612 },
+        { name: "New Zealand", men: 0, women: 0 }
+      ]},
+      { name: "@Bi-stanceceual", avatar: "🏳️‍🌈", events: [
+        { name: "Bells Beach", men: 332, women: 408 },
+        { name: "Margaret River", men: 510, women: 834 },
+        { name: "Gold Coast", men: 540, women: 592 },
+        { name: "New Zealand", men: 0, women: 0 }
+      ]},
+      { name: "@surfergirl69", avatar: "♋", events: [
+        { name: "Bells Beach", men: 309, women: 458 },
+        { name: "Margaret River", men: 0, women: 0 },
+        { name: "Gold Coast", men: 0, women: 0 },
+        { name: "New Zealand", men: 0, women: 0 }
+      ]},
+      { name: "@cocohomygod", avatar: "👙", events: [
+        { name: "Bells Beach", men: 264, women: 630 },
+        { name: "Margaret River", men: 530, women: 552 },
+        { name: "Gold Coast", men: 648, women: 652 },
+        { name: "New Zealand", men: 0, women: 0 }
+      ]},
+      { name: "@wslcansuckmynuts", avatar: "🥜", events: [
+        { name: "Bells Beach", men: 241, women: 0 },
+        { name: "Margaret River", men: 440, women: 646 },
+        { name: "Gold Coast", men: 597, women: 746 },
+        { name: "New Zealand", men: 0, women: 0 }
+      ]},
+      { name: "@bonghitbogger", avatar: "🌿", events: [
+        { name: "Bells Beach", men: 241, women: 502 },
+        { name: "Margaret River", men: 0, women: 0 },
+        { name: "Gold Coast", men: 0, women: 0 },
+        { name: "New Zealand", men: 0, women: 0 }
+      ]},
+      { name: "@ridingprivates", avatar: "🍆", events: [
+        { name: "Bells Beach", men: 0, women: 0 },
+        { name: "Margaret River", men: 538, women: 606 },
+        { name: "Gold Coast", men: 580, women: 692 },
+        { name: "New Zealand", men: 0, women: 0 }
+      ]},
+      { name: "@mrk", avatar: "👴", events: [
+        { name: "Bells Beach", men: 0, women: 0 },
+        { name: "Margaret River", men: 498, women: 690 },
+        { name: "Gold Coast", men: 510, women: 370 },
+        { name: "New Zealand", men: 0, women: 0 }
+      ]}
     ];
 
-    // Calculations + Ranking
+    // Process each member: calculate totals and identify dropped event
     members.forEach(member => {
+      member.events.forEach(ev => {
+        ev.total = ev.men + ev.women;
+      });
+
+      // Find the lowest event total (drop only one)
+      let lowestIndex = 0;
+      let lowestScore = member.events[0].total;
+
+      for (let i = 1; i < member.events.length; i++) {
+        if (member.events[i].total < lowestScore) {
+          lowestScore = member.events[i].total;
+          lowestIndex = i;
+        }
+      }
+
+      member.droppedIndex = lowestIndex;
       member.menTotal = member.events.reduce((sum, ev) => sum + ev.men, 0);
       member.womenTotal = member.events.reduce((sum, ev) => sum + ev.women, 0);
-      member.combined = member.menTotal + member.womenTotal;
+      member.combined = member.menTotal + member.womenTotal - lowestScore; // Drop lowest event
     });
 
-    // Sort by Combined (highest first)
+    // Sort by adjusted Combined score
     members.sort((a, b) => b.combined - a.combined);
 
     // Render table
@@ -174,20 +256,14 @@
 
     members.forEach((member, index) => {
       const rank = index + 1;
-      let rankHTML = '';
-
-      if (rank === 1) rankHTML = '🥇';
-      else if (rank === 2) rankHTML = '🥈';
-      else if (rank === 3) rankHTML = '🥉';
-      else if (rank === members.length) rankHTML = '🗑️';
-      else rankHTML = rank;
+      let rankHTML = rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : rank;
 
       let eventCells = '';
-      member.events.forEach(ev => {
-        const eventTotal = ev.men + ev.women;
+      member.events.forEach((ev, i) => {
+        const isDropped = i === member.droppedIndex;
         eventCells += `
-          <td class="event-cell">
-            <div class="event-total">${eventTotal}</div>
+          <td class="event-cell ${isDropped ? 'dropped' : ''}">
+            <div class="event-total ${isDropped ? 'dropped' : ''}">${ev.total}</div>
             <div class="event-detail">
               M:${ev.men}<br>W:${ev.women}
             </div>
@@ -209,7 +285,6 @@
         ${eventCells}
       `;
 
-      // Click to highlight entire row
       row.addEventListener('click', () => {
         document.querySelectorAll('tr').forEach(r => r.classList.remove('highlighted'));
         row.classList.add('highlighted');
