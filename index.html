@@ -64,6 +64,11 @@
       color: #9ca3af !important;
       opacity: 0.75;
     }
+    .star {
+      color: #eab308;
+      font-size: 1.1rem;
+      font-weight: bold;
+    }
     tr {
       transition: all 0.2s ease;
     }
@@ -117,7 +122,13 @@
       </div>
     </div>
 
-    <p class="text-center text-xs text-gray-400 mt-6">
+    <div class="mt-6 text-center">
+      <p class="text-xs text-gray-500">
+        * = Highest single event score overall
+      </p>
+    </div>
+
+    <p class="text-center text-xs text-gray-400 mt-4">
       Last updated: <span id="last-updated"></span> • Lowest event dropped per player • Tap row to highlight
     </p>
   </div>
@@ -137,7 +148,6 @@
         { name: "Gold Coast", men: 0, women: 0 },
         { name: "New Zealand", men: 0, women: 0 }
       ]},
-      // ... (all other members remain the same - I'm keeping them all)
       { name: "@san_lo_slurpee", avatar: "🥤", events: [
         { name: "Bells Beach", men: 430, women: 504 },
         { name: "Margaret River", men: 670, women: 640 },
@@ -224,16 +234,15 @@
       ]}
     ];
 
-    // Process each member: calculate totals and identify dropped event
+    // Process each member
     members.forEach(member => {
       member.events.forEach(ev => {
         ev.total = ev.men + ev.women;
       });
 
-      // Find the lowest event total (drop only one)
+      // Find lowest event to drop
       let lowestIndex = 0;
       let lowestScore = member.events[0].total;
-
       for (let i = 1; i < member.events.length; i++) {
         if (member.events[i].total < lowestScore) {
           lowestScore = member.events[i].total;
@@ -244,7 +253,22 @@
       member.droppedIndex = lowestIndex;
       member.menTotal = member.events.reduce((sum, ev) => sum + ev.men, 0);
       member.womenTotal = member.events.reduce((sum, ev) => sum + ev.women, 0);
-      member.combined = member.menTotal + member.womenTotal - lowestScore; // Drop lowest event
+      member.combined = member.menTotal + member.womenTotal - lowestScore;
+    });
+
+    // Find the absolute highest single event score across everyone
+    let globalMaxScore = -1;
+    let maxPlayerIndex = -1;
+    let maxEventIndex = -1;
+
+    members.forEach((member, pIndex) => {
+      member.events.forEach((ev, eIndex) => {
+        if (ev.total > globalMaxScore) {
+          globalMaxScore = ev.total;
+          maxPlayerIndex = pIndex;
+          maxEventIndex = eIndex;
+        }
+      });
     });
 
     // Sort by adjusted Combined score
@@ -258,12 +282,19 @@
       const rank = index + 1;
       let rankHTML = rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : rank;
 
+      // Check if this player has the highest single event
+      const hasStar = members.indexOf(member) === maxPlayerIndex; // Use original index after sort? Wait, better to use name or flag
+
       let eventCells = '';
       member.events.forEach((ev, i) => {
         const isDropped = i === member.droppedIndex;
+        const isMaxEvent = (member.name === members[maxPlayerIndex].name && i === maxEventIndex);
+
         eventCells += `
           <td class="event-cell ${isDropped ? 'dropped' : ''}">
-            <div class="event-total ${isDropped ? 'dropped' : ''}">${ev.total}</div>
+            <div class="event-total ${isDropped ? 'dropped' : ''}">
+              ${ev.total}${isMaxEvent ? '<span class="star">*</span>' : ''}
+            </div>
             <div class="event-detail">
               M:${ev.men}<br>W:${ev.women}
             </div>
@@ -277,7 +308,7 @@
         <td class="rank-cell py-4 border-r border-gray-200">${rankHTML}</td>
         <td class="pl-5 py-4 font-medium flex items-center gap-3 whitespace-nowrap border-r border-gray-200">
           <span class="text-2xl flex-shrink-0">${member.avatar}</span>
-          <span>${member.name}</span>
+          <span>${member.name}${hasStar ? '<span class="star">*</span>' : ''}</span>
         </td>
         <td class="combined-cell text-right pr-6 py-4 border-r border-gray-200">
           ${member.combined}
