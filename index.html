@@ -279,7 +279,7 @@
 
     members.forEach((member, index) => {
       const rank = index + 1;
-      const rankHTML = rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : rank;
+      const rankHTML = rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : rank === 16 ? '🗑️' : rank;
 
       let eventCells = '';
       member.events.forEach((ev, i) => {
